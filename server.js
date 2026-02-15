@@ -213,6 +213,10 @@ async function run() {
       }
     });
 
+    // =====================
+    // FAVORITES ROUTES - Challenge Requirement
+    // =====================
+
     // 9. GET user's favorites
     app.get('/favorites/:email', async (req, res) => {
       try {
