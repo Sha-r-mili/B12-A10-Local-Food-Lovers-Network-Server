@@ -120,6 +120,10 @@ async function run() {
       }
     });
 
+    // =====================
+    // POST ROUTE - Add New Review
+    // =====================
+
     // 5. POST - Add new review
     app.post('/reviews', async (req, res) => {
       try {
