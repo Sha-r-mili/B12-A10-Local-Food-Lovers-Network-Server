@@ -192,6 +192,10 @@ async function run() {
       }
     });
 
+    // =====================
+    // SEARCH ROUTE - MongoDB Regex Search
+    // =====================
+
     // 8. GET - Search reviews
     app.get('/reviews/search/:query', async (req, res) => {
       try {
