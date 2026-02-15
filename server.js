@@ -52,6 +52,9 @@ async function run() {
     // =====================
 
     // Test route
+    // =====================
+    // GET ROUTES - Fetch Reviews
+    // =====================
     app.get('/', (req, res) => {
       res.send('Local Food Lovers Network Server is Running! 🍕');
     });
