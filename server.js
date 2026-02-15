@@ -171,6 +171,10 @@ async function run() {
       }
     });
 
+    // =====================
+    // DELETE ROUTE - Remove Review
+    // =====================
+
     // 7. DELETE - Delete review
     app.delete('/reviews/:id', async (req, res) => {
       try {
