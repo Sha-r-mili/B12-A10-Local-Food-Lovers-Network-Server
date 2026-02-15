@@ -24,29 +24,28 @@ const client = new MongoClient(uri, {
   }
 });
 
-// Database references (will be initialized after connection)
-let reviewsCollection;
-let favoritesCollection;
+// Database connection promise
+let dbConnection;
 
-// Connect to MongoDB
 async function connectDB() {
+  if (dbConnection) return dbConnection;
+  
   try {
     await client.connect();
     console.log("✅ Connected to MongoDB!");
-    
-    const database = client.db('localFoodLovers');
-    reviewsCollection = database.collection('reviews');
-    favoritesCollection = database.collection('favorites');
+    dbConnection = client.db('localFoodLovers');
+    return dbConnection;
   } catch (error) {
     console.error('❌ MongoDB Error:', error);
+    throw error;
   }
 }
 
-// Connect to database
+// Initialize connection
 connectDB();
 
 // =====================
-// ROUTES - Defined outside async function
+// ROUTES
 // =====================
 
 // Test route
@@ -61,6 +60,9 @@ app.get('/', (req, res) => {
 // 1. GET all reviews (sorted by newest)
 app.get('/reviews', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
+    
     const reviews = await reviewsCollection
       .find()
       .sort({ createdAt: -1 })
@@ -75,6 +77,9 @@ app.get('/reviews', async (req, res) => {
 // 2. GET top 6 featured reviews
 app.get('/reviews/featured', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
+    
     const reviews = await reviewsCollection
       .find()
       .sort({ rating: -1, createdAt: -1 })
@@ -90,7 +95,10 @@ app.get('/reviews/featured', async (req, res) => {
 // 3. GET reviews by user email
 app.get('/reviews/user/:email', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
     const email = req.params.email;
+    
     const reviews = await reviewsCollection
       .find({ userEmail: email })
       .sort({ createdAt: -1 })
@@ -105,8 +113,11 @@ app.get('/reviews/user/:email', async (req, res) => {
 // 4. GET single review by ID
 app.get('/reviews/:id', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
+    
     const review = await reviewsCollection.findOne(query);
     
     if (!review) {
@@ -122,6 +133,9 @@ app.get('/reviews/:id', async (req, res) => {
 // 5. POST - Add new review
 app.post('/reviews', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
+    
     const newReview = {
       ...req.body,
       createdAt: new Date()
@@ -137,8 +151,11 @@ app.post('/reviews', async (req, res) => {
 // 6. PUT - Update review
 app.put('/reviews/:id', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) };
+    
     const updatedReview = {
       $set: {
         foodName: req.body.foodName,
@@ -165,8 +182,11 @@ app.put('/reviews/:id', async (req, res) => {
 // 7. DELETE - Delete review
 app.delete('/reviews/:id', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
+    
     const result = await reviewsCollection.deleteOne(query);
     
     if (result.deletedCount === 0) {
@@ -182,7 +202,10 @@ app.delete('/reviews/:id', async (req, res) => {
 // 8. GET - Search reviews
 app.get('/reviews/search/:query', async (req, res) => {
   try {
+    const db = await connectDB();
+    const reviewsCollection = db.collection('reviews');
     const searchQuery = req.params.query;
+    
     const reviews = await reviewsCollection
       .find({
         foodName: { $regex: searchQuery, $options: 'i' }
@@ -203,7 +226,10 @@ app.get('/reviews/search/:query', async (req, res) => {
 // 9. GET user's favorites
 app.get('/favorites/:email', async (req, res) => {
   try {
+    const db = await connectDB();
+    const favoritesCollection = db.collection('favorites');
     const email = req.params.email;
+    
     const favorites = await favoritesCollection
       .find({ userEmail: email })
       .toArray();
@@ -217,6 +243,9 @@ app.get('/favorites/:email', async (req, res) => {
 // 10. POST - Add to favorites
 app.post('/favorites', async (req, res) => {
   try {
+    const db = await connectDB();
+    const favoritesCollection = db.collection('favorites');
+    
     const existing = await favoritesCollection.findOne({
       userEmail: req.body.userEmail,
       reviewId: req.body.reviewId
@@ -241,8 +270,11 @@ app.post('/favorites', async (req, res) => {
 // 11. DELETE - Remove from favorites
 app.delete('/favorites/:id', async (req, res) => {
   try {
+    const db = await connectDB();
+    const favoritesCollection = db.collection('favorites');
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
+    
     const result = await favoritesCollection.deleteOne(query);
     
     if (result.deletedCount === 0) {
@@ -258,7 +290,10 @@ app.delete('/favorites/:id', async (req, res) => {
 // 12. Check if favorited
 app.get('/favorites/check/:email/:reviewId', async (req, res) => {
   try {
+    const db = await connectDB();
+    const favoritesCollection = db.collection('favorites');
     const { email, reviewId } = req.params;
+    
     const favorite = await favoritesCollection.findOne({
       userEmail: email,
       reviewId: reviewId
