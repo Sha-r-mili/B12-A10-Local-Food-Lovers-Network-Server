@@ -139,6 +139,10 @@ async function run() {
       }
     });
 
+    // =====================
+    // PUT ROUTE - Update Review
+    // =====================
+
     // 6. PUT - Update review
     app.put('/reviews/:id', async (req, res) => {
       try {
